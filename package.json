@@ -1,0 +1,15 @@
+{
+  "name": "wux-ui-cli",
+  "version": "0.0.2",
+  "description": "a CLI for WuX-UI",
+  "type": "module",
+  "author": "slouchwind",
+  "license": "MIT",
+  "bin": {
+    "wux-ui": "cli.js"
+  },
+  "dependencies": {
+    "chalk": "^5.1.2",
+    "envinfo": "^7.8.1"
+  }
+}
