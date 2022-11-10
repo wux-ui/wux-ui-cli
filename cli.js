@@ -1,16 +1,19 @@
 #!/usr/bin/env node
 import envinfo from 'envinfo';
 import fs from 'fs';
+import path from 'path';
 import inquirer from 'inquirer';
 import axios from 'axios';
 import spawn from 'cross-spawn';
+import singleLineLog from './lib/single-line-log.js';
 
 import { handleArgv } from './lib/argv.js';
 import { err, color, warnInfo, handleStatus } from './lib/log.js';
 import { needUpdate } from './lib/update.js';
-import path from 'path';
+
 const argv = handleArgv();
 const { processedArgv } = argv;
+const lineLog = new (singleLineLog(process.stdout));
 
 //wux-ui -d [cmd]
 if (processedArgv.includes('-d') || processedArgv.includes('--debug')) console.log(argv);
@@ -70,14 +73,38 @@ if (processedArgv.includes('i')) {
                         default: false
                     }])
                     .then(({ install }) => {
-                        if (install) axios
-                            .get('https://debug.wux-ui.tk/dist/wux.css')
-                            .then(r => handleStatus(r.status, r.statusText, _ =>
-                                fs.writeFile('wux.css', r.data, err => {
-                                    if (err) throw err;
-                                    console.log('The file is installed');
-                                })
-                            ));
+                        if (install) {
+                            inquirer
+                                .prompt([{
+                                    type: 'list',
+                                    name: 'hostname',
+                                    message: 'Where do you want to install from?',
+                                    choices: ['debug.wux-ui.tk', 'cdn.jsdelivr.net/gh/wux-ui/wux-ui'],
+                                }])
+                                .then(({ hostname }) => {
+                                    const text = `Getting wux.css from ${color.wux(`https://${hostname}/dist/wux.css`)}`;
+                                    let waiting = '';
+                                    const logger = setInterval(() => {
+                                        waiting = waiting.length === 3 ? '' : waiting + '.';
+                                        lineLog.log(text + waiting);
+                                    }, 500);
+                                    axios
+                                        .get(`https://${hostname}/dist/wux.css`)
+                                        .then(result => {
+                                            handleStatus(
+                                                _ => {
+                                                    clearInterval(logger);
+                                                    lineLog.clear();
+                                                },
+                                                result,
+                                                _ => fs.writeFile('wux.css', result.data, err => {
+                                                    if (err) throw err;
+                                                    console.log('The file is installed');
+                                                })
+                                            );
+                                        });
+                                });
+                        }
                     });
                 break;
 
