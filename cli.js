@@ -122,6 +122,6 @@ if (processedArgv.includes('update')) {
                 console.log(`Update ${color.wux('wux-ui-cli')} ${version} -> ${nowVersion}`);
             });
         }
-        else console.log('There is no new version');
+        else console.log(`There is no new version, now version: ${color.wux('v' + nowVersion)}`);
     }, (err) => { throw err });
 }
