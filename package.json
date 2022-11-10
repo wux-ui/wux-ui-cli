@@ -1,6 +1,6 @@
 {
   "name": "wux-ui-cli",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "description": "a CLI for WuX-UI",
   "type": "module",
   "author": "slouchwind",
