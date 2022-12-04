@@ -12,14 +12,14 @@ import { err, color, warnInfo, handleStatus } from './lib/log.js';
 import { haveGit, needUpdate } from './lib/check.js';
 
 const argv = handleArgv();
-const { processedArgv } = argv;
+const { processedArgv: proArgv } = argv;
 const lineLog = new (singleLineLog(process.stdout));
 
 //wux-ui -d [cmd]
-if (processedArgv.includes('-d') || processedArgv.includes('--debug')) console.log(argv);
+if (proArgv.includesOpt('d', 'debug')) console.log(argv);
 
 //wux-ui ls
-if (processedArgv.includes('ls')) {
+if (proArgv.includesCmd('ls')) {
   envinfo
     .run({ npmPackages: ['react'] }, { json: true, showNotFound: true })
     .then(env => {
@@ -64,8 +64,8 @@ if (processedArgv.includes('ls')) {
 }
 
 //wux-ui i <pkg>
-if (processedArgv.includes('i')) {
-  const pkg = processedArgv[processedArgv.indexOf('i') + 1];
+else if (proArgv.includesCmd('i')) {
+  const pkg = proArgv.getCmd('i', 1);
   if (pkg === undefined) err('You need write the pkg name to install');
   else {
     switch (pkg) {
@@ -117,7 +117,7 @@ if (processedArgv.includes('i')) {
 
       case 'wux-ui-react':
         haveGit().then(have => {
-          const downloadPath = processedArgv[processedArgv.indexOf(pkg) + 1] || '.\\src\\wux-ui-react';
+          const downloadPath = proArgv.getCmd('i', 2) || '.\\src\\wux-ui-react';
           if (have) spawn('git', ['clone', 'https://github.com/wux-ui/wux-ui-react.git', downloadPath], { stdio: 'inherit' });
           else {
             console.log(`You don't have ${color.git('git')} yet`);
@@ -126,13 +126,13 @@ if (processedArgv.includes('i')) {
         });
         break;
 
-      default: err(`There isn't a pkg of ${pkg}`);
+      default: err(`There isn't a package of ${pkg}`);
     }
   }
 }
 
 //wux-ui update
-if (processedArgv.includes('update')) {
+else if (proArgv.includesCmd('update')) {
   let waiting = '';
   const logInfo = () => {
     waiting = waiting.length === 3 ? '' : waiting + '.';
